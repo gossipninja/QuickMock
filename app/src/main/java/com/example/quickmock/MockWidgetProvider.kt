@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.view.View
 import android.widget.RemoteViews
 
 class MockWidgetProvider : AppWidgetProvider() {
@@ -13,36 +14,36 @@ class MockWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         val prefs = context.getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
 
+        val btnIds = intArrayOf(
+            R.id.btn_loc_1, R.id.btn_loc_2, R.id.btn_loc_3,
+            R.id.btn_loc_4, R.id.btn_loc_5, R.id.btn_loc_6,
+            R.id.btn_loc_7, R.id.btn_loc_8, R.id.btn_loc_9
+        )
+
+        val defaultNames = arrayOf(
+            "Sam's Sandusky", "Cedar Point", "Sam's Sheffield", "Sam's Brooklyn",
+            "", "", "", "", ""
+        )
+        val defaultLats = floatArrayOf(41.4186f, 41.4822f, 41.4239f, 41.4222f, 0f, 0f, 0f, 0f, 0f)
+        val defaultLngs = floatArrayOf(-82.6844f, -82.6835f, -82.1082f, -81.7423f, 0f, 0f, 0f, 0f, 0f)
+
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.widget_layout)
 
-            val name1 = prefs.getString("name_1", "Loc 1") ?: "Loc 1"
-            val lat1 = prefs.getFloat("lat_1", 41.3686f).toDouble()
-            val lng1 = prefs.getFloat("lng_1", -82.1076f).toDouble()
+            for (i in 0 until 9) {
+                val idx = i + 1
+                val name = prefs.getString("name_$idx", defaultNames[i]) ?: ""
+                val lat = prefs.getFloat("lat_$idx", defaultLats[i]).toDouble()
+                val lng = prefs.getFloat("lng_$idx", defaultLngs[i]).toDouble()
 
-            val name2 = prefs.getString("name_2", "Loc 2") ?: "Loc 2"
-            val lat2 = prefs.getFloat("lat_2", 41.5055f).toDouble()
-            val lng2 = prefs.getFloat("lng_2", -81.6074f).toDouble()
-
-            val name3 = prefs.getString("name_3", "Loc 3") ?: "Loc 3"
-            val lat3 = prefs.getFloat("lat_3", 40.7128f).toDouble()
-            val lng3 = prefs.getFloat("lng_3", -74.0060f).toDouble()
-
-            val name4 = prefs.getString("name_4", "Loc 4") ?: "Loc 4"
-            val lat4 = prefs.getFloat("lat_4", 34.0522f).toDouble()
-            val lng4 = prefs.getFloat("lng_4", -118.2437f).toDouble()
-
-            views.setTextViewText(R.id.btn_loc_1, name1)
-            views.setOnClickPendingIntent(R.id.btn_loc_1, createMockIntent(context, lat1, lng1, 1))
-
-            views.setTextViewText(R.id.btn_loc_2, name2)
-            views.setOnClickPendingIntent(R.id.btn_loc_2, createMockIntent(context, lat2, lng2, 2))
-
-            views.setTextViewText(R.id.btn_loc_3, name3)
-            views.setOnClickPendingIntent(R.id.btn_loc_3, createMockIntent(context, lat3, lng3, 3))
-
-            views.setTextViewText(R.id.btn_loc_4, name4)
-            views.setOnClickPendingIntent(R.id.btn_loc_4, createMockIntent(context, lat4, lng4, 4))
+                if (name.isNotEmpty() && (lat != 0.0 || lng != 0.0)) {
+                    views.setViewVisibility(btnIds[i], View.VISIBLE)
+                    views.setTextViewText(btnIds[i], name)
+                    views.setOnClickPendingIntent(btnIds[i], createMockIntent(context, lat, lng, idx))
+                } else {
+                    views.setViewVisibility(btnIds[i], View.GONE)
+                }
+            }
 
             val clearIntent = Intent(context, MockWidgetProvider::class.java).apply {
                 action = "com.example.quickmock.ACTION_CLEAR_MOCK"

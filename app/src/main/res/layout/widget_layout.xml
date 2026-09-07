@@ -3,61 +3,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_container_bg"
-    android:orientation="horizontal"
-    android:padding="8dp">
+    android:orientation="vertical"
+    android:padding="6dp">
 
-    <Button
-        android:id="@+id/btn_loc_1"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_margin="2dp"
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@drawable/widget_button_bg"
-        android:text="Loc 1"
-        android:textColor="#FFFFFF"
-        android:textSize="11sp" />
+        android:columnCount="3"
+        android:rowCount="3">
 
-    <Button
-        android:id="@+id/btn_loc_2"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_margin="2dp"
-        android:layout_weight="1"
-        android:background="@drawable/widget_button_bg"
-        android:text="Loc 2"
-        android:textColor="#FFFFFF"
-        android:textSize="11sp" />
+        <Button android:id="@+id/btn_loc_1" android:layout_width="0dp" android:layout_height="0dp" android:layout_rowWeight="1" android:layout_columnWeight="1" android:layout_margin="2dp" android:background="@drawable/widget_button_bg" android:textColor="#FFFFFF" android:textSize="10sp" />
+        <Button android:id="@+id/btn_loc_2" android:layout_width="0dp" android:layout_height="0dp" android:layout_rowWeight="1" android:layout_columnWeight="1" android:layout_margin="2dp" android:background="@drawable/widget_button_bg" android:textColor="#FFFFFF" android:textSize="10sp" />
+        <Button android:id="@+id/btn_loc_3" android:layout_width="0dp" android:layout_height="0dp" android:layout_rowWeight="1" android:layout_columnWeight="1" android:layout_margin="2dp" android:background="@drawable/widget_button_bg" android:textColor="#FFFFFF" android:textSize="10sp" />
 
-    <Button
-        android:id="@+id/btn_loc_3"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_margin="2dp"
-        android:layout_weight="1"
-        android:background="@drawable/widget_button_bg"
-        android:text="Loc 3"
-        android:textColor="#FFFFFF"
-        android:textSize="11sp" />
+        <Button android:id="@+id/btn_loc_4" android:layout_width="0dp" android:layout_height="0dp" android:layout_rowWeight="1" android:layout_columnWeight="1" android:layout_margin="2dp" android:background="@drawable/widget_button_bg" android:textColor="#FFFFFF" android:textSize="10sp" />
+        <Button android:id="@+id/btn_loc_5" android:layout_width="0dp" android:layout_height="0dp" android:layout_rowWeight="1" android:layout_columnWeight="1" android:layout_margin="2dp" android:background="@drawable/widget_button_bg" android:textColor="#FFFFFF" android:textSize="10sp" />
+        <Button android:id="@+id/btn_loc_6" android:layout_width="0dp" android:layout_height="0dp" android:layout_rowWeight="1" android:layout_columnWeight="1" android:layout_margin="2dp" android:background="@drawable/widget_button_bg" android:textColor="#FFFFFF" android:textSize="10sp" />
 
-    <Button
-        android:id="@+id/btn_loc_4"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_margin="2dp"
-        android:layout_weight="1"
-        android:background="@drawable/widget_button_bg"
-        android:text="Loc 4"
-        android:textColor="#FFFFFF"
-        android:textSize="11sp" />
+        <Button android:id="@+id/btn_loc_7" android:layout_width="0dp" android:layout_height="0dp" android:layout_rowWeight="1" android:layout_columnWeight="1" android:layout_margin="2dp" android:background="@drawable/widget_button_bg" android:textColor="#FFFFFF" android:textSize="10sp" />
+        <Button android:id="@+id/btn_loc_8" android:layout_width="0dp" android:layout_height="0dp" android:layout_rowWeight="1" android:layout_columnWeight="1" android:layout_margin="2dp" android:background="@drawable/widget_button_bg" android:textColor="#FFFFFF" android:textSize="10sp" />
+        <Button android:id="@+id/btn_loc_9" android:layout_width="0dp" android:layout_height="0dp" android:layout_rowWeight="1" android:layout_columnWeight="1" android:layout_margin="2dp" android:background="@drawable/widget_button_bg" android:textColor="#FFFFFF" android:textSize="10sp" />
+
+    </GridLayout>
 
     <Button
         android:id="@+id/btn_clear"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_margin="2dp"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_marginTop="4dp"
         android:background="@drawable/widget_button_bg"
-        android:text="Stop"
+        android:text="Stop Mocking"
         android:textColor="#FF453A"
         android:textSize="11sp" />
 

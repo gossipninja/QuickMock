@@ -12,12 +12,43 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="QuickMock Location Configuration"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
+            android:text="QuickMock Configuration"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-        <!-- Slots 1 - 4 -->
+        <!-- Setup Instructions Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#10000000"
+            android:padding="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Developer Setup Instructions"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1. Open Settings -> About Phone -> Tap 'Build Number' 7 times to enable Developer Options.\n2. Go to Settings -> System -> Developer Options.\n3. Scroll to 'Select mock location app' and choose 'QuickMock'."
+                android:textSize="12sp"
+                android:layout_marginTop="4dp" />
+
+            <Button
+                android:id="@+id/btn_find_coords"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Find Lat / Long Online"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <!-- Location Slots 1-9 -->
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 1" android:textStyle="bold" />
         <EditText android:id="@+id/edit_name_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
         <EditText android:id="@+id/edit_lat_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
@@ -36,35 +67,38 @@
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 4" android:textStyle="bold" />
         <EditText android:id="@+id/edit_name_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
         <EditText android:id="@+id/edit_lat_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
-        <EditText android:id="@+id/edit_lng_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="16dp" />
+        <EditText android:id="@+id/edit_lng_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 5" android:textStyle="bold" />
+        <EditText android:id="@+id/edit_name_5" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
+        <EditText android:id="@+id/edit_lat_5" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
+        <EditText android:id="@+id/edit_lng_5" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 6" android:textStyle="bold" />
+        <EditText android:id="@+id/edit_name_6" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
+        <EditText android:id="@+id/edit_lat_6" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
+        <EditText android:id="@+id/edit_lng_6" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 7" android:textStyle="bold" />
+        <EditText android:id="@+id/edit_name_7" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
+        <EditText android:id="@+id/edit_lat_7" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
+        <EditText android:id="@+id/edit_lng_7" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 8" android:textStyle="bold" />
+        <EditText android:id="@+id/edit_name_8" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
+        <EditText android:id="@+id/edit_lat_8" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
+        <EditText android:id="@+id/edit_lng_8" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 9" android:textStyle="bold" />
+        <EditText android:id="@+id/edit_name_9" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
+        <EditText android:id="@+id/edit_lat_9" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
+        <EditText android:id="@+id/edit_lng_9" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="16dp" />
 
         <Button
             android:id="@+id/btn_save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Save &amp; Update Widget" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Credits &amp; Info"
-            android:textStyle="bold"
-            android:textSize="14sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="QuickMock v1.0\nBuilt for rapid location mock testing via App Widgets."
-            android:textSize="12sp"
-            android:textColor="#666666"
-            android:layout_marginTop="4dp" />
 
     </LinearLayout>
 </ScrollView>
