@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="#1E1E1E">
+
+    <TextView
+        android:id="@+id/widget_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="QuickMock"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:layout_marginBottom="6dp" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:columnCount="3"
+        android:rowCount="3">
+
+        <Button android:id="@+id/btn_slot_1" android:layout_width="0dp" android:layout_height="0dp" android:layout_columnWeight="1" android:layout_rowWeight="1" android:textSize="10sp" android:text="Slot 1" />
+        <Button android:id="@+id/btn_slot_2" android:layout_width="0dp" android:layout_height="0dp" android:layout_columnWeight="1" android:layout_rowWeight="1" android:textSize="10sp" android:text="Slot 2" />
+        <Button android:id="@+id/btn_slot_3" android:layout_width="0dp" android:layout_height="0dp" android:layout_columnWeight="1" android:layout_rowWeight="1" android:textSize="10sp" android:text="Slot 3" />
+        <Button android:id="@+id/btn_slot_4" android:layout_width="0dp" android:layout_height="0dp" android:layout_columnWeight="1" android:layout_rowWeight="1" android:textSize="10sp" android:text="Slot 4" />
+        <Button android:id="@+id/btn_slot_5" android:layout_width="0dp" android:layout_height="0dp" android:layout_columnWeight="1" android:layout_rowWeight="1" android:textSize="10sp" android:text="Slot 5" />
+        <Button android:id="@+id/btn_slot_6" android:layout_width="0dp" android:layout_height="0dp" android:layout_columnWeight="1" android:layout_rowWeight="1" android:textSize="10sp" android:text="Slot 6" />
+        <Button android:id="@+id/btn_slot_7" android:layout_width="0dp" android:layout_height="0dp" android:layout_columnWeight="1" android:layout_rowWeight="1" android:textSize="10sp" android:text="Slot 7" />
+        <Button android:id="@+id/btn_slot_8" android:layout_width="0dp" android:layout_height="0dp" android:layout_columnWeight="1" android:layout_rowWeight="1" android:textSize="10sp" android:text="Slot 8" />
+        <Button android:id="@+id/btn_slot_9" android:layout_width="0dp" android:layout_height="0dp" android:layout_columnWeight="1" android:layout_rowWeight="1" android:textSize="10sp" android:text="Slot 9" />
+
+    </GridLayout>
+
+    <Button
+        android:id="@+id/btn_toggle_mock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Mocking"
+        android:textSize="12sp"
+        android:layout_marginTop="6dp" />
+
+</LinearLayout>

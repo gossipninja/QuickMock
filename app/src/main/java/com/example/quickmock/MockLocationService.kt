@@ -25,13 +25,16 @@ class MockLocationService : Service() {
     private var activeLat: Double = 0.0
     private var activeLng: Double = 0.0
     private var activeName: String = ""
+    private var activeSlot: Int = -1
     private var isMocking = false
 
     private val mockRunnable = object : Runnable {
         override fun run() {
             if (isMocking) {
-                pushMockLocation(activeLat, activeLng)
-                handler.postDelayed(this, 1000)
+                val success = pushMockLocation(activeLat, activeLng)
+                if (success) {
+                    handler.postDelayed(this, 1000)
+                }
             }
         }
     }
@@ -48,6 +51,7 @@ class MockLocationService : Service() {
                 activeLat = intent.getDoubleExtra("LAT", 0.0)
                 activeLng = intent.getDoubleExtra("LNG", 0.0)
                 activeName = intent.getStringExtra("NAME") ?: "Custom Spot"
+                activeSlot = intent.getIntExtra("SLOT", -1)
                 isMocking = true
 
                 val notification = createNotification("Mocking: $activeName ($activeLat, $activeLng)")
@@ -56,12 +60,15 @@ class MockLocationService : Service() {
                 handler.removeCallbacks(mockRunnable)
                 handler.post(mockRunnable)
 
+                notifyWidgetState(activeSlot, true)
                 Toast.makeText(this, "Now mocking $activeName", Toast.LENGTH_SHORT).show()
             }
             "STOP_MOCK" -> {
                 isMocking = false
                 handler.removeCallbacks(mockRunnable)
                 stopMockProvider()
+                notifyWidgetState(-1, false)
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     stopForeground(STOP_FOREGROUND_REMOVE)
                 } else {
@@ -75,8 +82,8 @@ class MockLocationService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun pushMockLocation(lat: Double, lng: Double) {
-        try {
+    private fun pushMockLocation(lat: Double, lng: Double): Boolean {
+        return try {
             val provider = LocationManager.GPS_PROVIDER
             @Suppress("DEPRECATION")
             locationManager?.addTestProvider(
@@ -93,18 +100,33 @@ class MockLocationService : Service() {
                 elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
             }
             locationManager?.setTestProviderLocation(provider, mockLocation)
+            true
         } catch (e: SecurityException) {
+            isMocking = false
             handler.post {
-                Toast.makeText(this, "Error: Set QuickMock as Mock Location App in Developer Settings", Toast.LENGTH_LONG).show()
+                Toast.makeText(applicationContext, "Error: Set QuickMock as Mock Location App in Developer Settings", Toast.LENGTH_LONG).show()
             }
+            notifyWidgetState(-1, false)
             stopSelf()
-        } catch (_: Exception) {}
+            false
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun stopMockProvider() {
         try {
             locationManager?.removeTestProvider(LocationManager.GPS_PROVIDER)
         } catch (_: Exception) {}
+    }
+
+    private fun notifyWidgetState(slot: Int, mocking: Boolean) {
+        val intent = Intent(this, MockWidgetProvider::class.java).apply {
+            action = "UPDATE_WIDGET_STATE"
+            putExtra("ACTIVE_SLOT", slot)
+            putExtra("IS_MOCKING", mocking)
+        }
+        sendBroadcast(intent)
     }
 
     private fun createNotification(content: String): Notification {
