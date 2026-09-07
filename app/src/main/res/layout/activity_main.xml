@@ -16,7 +16,7 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
-        <!-- Setup Instructions Card -->
+        <!-- Developer Instructions -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
             android:background="#10000000"
             android:padding="12dp"
             android:layout_marginTop="12dp"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="12dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -36,19 +36,61 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1. Open Settings -> About Phone -> Tap 'Build Number' 7 times to enable Developer Options.\n2. Go to Settings -> System -> Developer Options.\n3. Scroll to 'Select mock location app' and choose 'QuickMock'."
+                android:text="1. Settings -> About Phone -> Tap 'Build Number' 7 times.\n2. Settings -> Developer Options -> Select mock location app -> 'QuickMock'."
                 android:textSize="12sp"
                 android:layout_marginTop="4dp" />
 
-            <Button
-                android:id="@+id/btn_find_coords"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Find Lat / Long Online"
-                android:layout_marginTop="8dp" />
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <Button
+                    android:id="@+id/btn_find_coords"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="Find Lat/Long"
+                    android:textSize="11sp" />
+
+                <Button
+                    android:id="@+id/btn_save_current_loc"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="Save Current GPS"
+                    android:textSize="11sp" />
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- Location Slots 1-9 -->
+        <!-- JSON Actions -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btn_export_json"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Export JSON"
+                android:textSize="11sp" />
+
+            <Button
+                android:id="@+id/btn_import_json"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Import JSON"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- Slots 1 - 9 Inputs -->
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 1" android:textStyle="bold" />
         <EditText android:id="@+id/edit_name_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
         <EditText android:id="@+id/edit_lat_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />

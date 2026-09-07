@@ -3,6 +3,7 @@ package com.example.quickmock
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 
 class MockLocationService : Service() {
@@ -22,6 +24,7 @@ class MockLocationService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private var activeLat: Double = 0.0
     private var activeLng: Double = 0.0
+    private var activeName: String = ""
     private var isMocking = false
 
     private val mockRunnable = object : Runnable {
@@ -44,13 +47,16 @@ class MockLocationService : Service() {
             "START_MOCK" -> {
                 activeLat = intent.getDoubleExtra("LAT", 0.0)
                 activeLng = intent.getDoubleExtra("LNG", 0.0)
+                activeName = intent.getStringExtra("NAME") ?: "Custom Spot"
                 isMocking = true
 
-                val notification = createNotification("Active: $activeLat, $activeLng")
+                val notification = createNotification("Mocking: $activeName ($activeLat, $activeLng)")
                 startForeground(1, notification)
 
                 handler.removeCallbacks(mockRunnable)
                 handler.post(mockRunnable)
+
+                Toast.makeText(this, "Now mocking $activeName", Toast.LENGTH_SHORT).show()
             }
             "STOP_MOCK" -> {
                 isMocking = false
@@ -63,6 +69,7 @@ class MockLocationService : Service() {
                     stopForeground(true)
                 }
                 stopSelf()
+                Toast.makeText(this, "Mocking stopped", Toast.LENGTH_SHORT).show()
             }
         }
         return START_NOT_STICKY
@@ -86,6 +93,11 @@ class MockLocationService : Service() {
                 elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
             }
             locationManager?.setTestProviderLocation(provider, mockLocation)
+        } catch (e: SecurityException) {
+            handler.post {
+                Toast.makeText(this, "Error: Set QuickMock as Mock Location App in Developer Settings", Toast.LENGTH_LONG).show()
+            }
+            stopSelf()
         } catch (_: Exception) {}
     }
 
@@ -96,11 +108,17 @@ class MockLocationService : Service() {
     }
 
     private fun createNotification(content: String): Notification {
+        val stopIntent = Intent(this, MockLocationService::class.java).apply { action = "STOP_MOCK" }
+        val stopPendingIntent = PendingIntent.getService(
+            this, 101, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("QuickMock Spoofing Active")
+            .setContentTitle("QuickMock Active")
             .setContentText(content)
             .setSmallIcon(R.drawable.ic_compass)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .addAction(R.drawable.ic_compass, "Stop Mocking", stopPendingIntent)
             .build()
     }
 
