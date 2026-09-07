@@ -76,7 +76,7 @@ class MockWidgetProvider : AppWidgetProvider() {
         for (i in 0 until 9) {
             val slotIdx = i + 1
             val name = prefs.getString("name_$slotIdx", "Slot $slotIdx")
-            views.setTextViewText(slotButtons[i], if (name.isNull_or_Empty()) "Slot $slotIdx" else name)
+            views.setTextViewText(slotButtons[i], if (name.isNullOrEmpty()) "Slot $slotIdx" else name)
 
             val clickIntent = Intent(context, MockWidgetProvider::class.java).apply {
                 action = "ACTION_SLOT_CLICK"
@@ -106,6 +106,4 @@ class MockWidgetProvider : AppWidgetProvider() {
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
-
-    private fun String?.isNull_or_Empty(): Boolean = this == null || this.isEmpty()
 }
