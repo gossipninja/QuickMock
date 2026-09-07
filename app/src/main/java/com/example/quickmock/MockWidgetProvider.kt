@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 
@@ -47,6 +48,7 @@ class MockWidgetProvider : AppWidgetProvider() {
 
             val clearIntent = Intent(context, MockWidgetProvider::class.java).apply {
                 action = "com.example.quickmock.ACTION_CLEAR_MOCK"
+                `package` = context.packageName
             }
             val clearPendingIntent = PendingIntent.getBroadcast(
                 context, 999, clearIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -60,6 +62,7 @@ class MockWidgetProvider : AppWidgetProvider() {
     private fun createMockIntent(context: Context, lat: Double, lng: Double, requestCode: Int): PendingIntent {
         val intent = Intent(context, MockWidgetProvider::class.java).apply {
             action = "com.example.quickmock.ACTION_SET_MOCK"
+            `package` = context.packageName
             putExtra("EXTRA_LAT", lat)
             putExtra("EXTRA_LNG", lng)
         }
@@ -70,20 +73,32 @@ class MockWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
+        Log.d("QuickMock", "Widget Broadcast Received: ${intent.action}")
+
         val serviceIntent = Intent(context, MockLocationService::class.java)
 
         when (intent.action) {
             "com.example.quickmock.ACTION_SET_MOCK" -> {
+                val lat = intent.getDoubleExtra("EXTRA_LAT", 0.0)
+                val lng = intent.getDoubleExtra("EXTRA_LNG", 0.0)
+                Log.d("QuickMock", "Triggering Mock Location -> Lat: $lat, Lng: $lng")
+
                 serviceIntent.action = "START_MOCK"
-                serviceIntent.putExtra("LAT", intent.getDoubleExtra("EXTRA_LAT", 0.0))
-                serviceIntent.putExtra("LNG", intent.getDoubleExtra("EXTRA_LNG", 0.0))
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    context.startForegroundService(serviceIntent)
-                } else {
-                    context.startService(serviceIntent)
+                serviceIntent.putExtra("LAT", lat)
+                serviceIntent.putExtra("LNG", lng)
+                
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        context.startForegroundService(serviceIntent)
+                    } else {
+                        context.startService(serviceIntent)
+                    }
+                } catch (e: Exception) {
+                    Log.e("QuickMock", "Failed to start service from widget broadcast", e)
                 }
             }
             "com.example.quickmock.ACTION_CLEAR_MOCK" -> {
+                Log.d("QuickMock", "Stopping Mock Service")
                 serviceIntent.action = "STOP_MOCK"
                 context.startService(serviceIntent)
             }
