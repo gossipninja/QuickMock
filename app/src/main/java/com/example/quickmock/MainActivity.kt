@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity() {
         val eLat4 = findViewById<EditText>(R.id.et_lat_4)
         val eLng4 = findViewById<EditText>(R.id.et_lng_4)
 
-        // Load existing values or defaults
         eName1.setText(prefs.getString("name_1", "Home"))
         eLat1.setText(prefs.getFloat("lat_1", 41.3686f).toString())
         eLng1.setText(prefs.getFloat("lng_1", -82.1076f).toString())
@@ -71,7 +70,6 @@ class MainActivity : AppCompatActivity() {
                 apply()
             }
 
-            // Trigger Widget Update
             val intent = Intent(this, MockWidgetProvider::class.java).apply {
                 action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
                 val ids = AppWidgetManager.getInstance(application).getAppWidgetIds(

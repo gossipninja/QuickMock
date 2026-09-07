@@ -1,91 +1,104 @@
-﻿package com.example.quickmock
+package com.example.quickmock
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
+import android.location.provider.ProviderProperties
 import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
-import java.util.Timer
-import java.util.TimerTask
+import androidx.core.app.NotificationCompat
 
 class MockLocationService : Service() {
 
-    private lateinit var locationManager: LocationManager
-    private var timer: Timer? = null
-    private val providerName = LocationManager.GPS_PROVIDER
+    private val CHANNEL_ID = "MockLocationServiceChannel"
+    private var locationManager: LocationManager? = null
 
     override fun onCreate() {
         super.onCreate()
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        startForegroundServiceNotification()
+        createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            "START_MOCK" -> {
-                val lat = intent.getDoubleExtra("LAT", 0.0)
-                val lng = intent.getDoubleExtra("LNG", 0.0)
-                startMocking(lat, lng)
-            }
-            "STOP_MOCK" -> stopMocking()
-        }
-        return START_STICKY
-    }
+        val action = intent?.action
 
-    private fun startMocking(lat: Double, lng: Double) {
-        timer?.cancel()
-        try {
-            try { locationManager.removeTestProvider(providerName) } catch (_: Exception) {}
-            
-            locationManager.addTestProvider(
-                providerName, false, false, false, false, 
-                true, true, true, 1, 1
-            )
-            locationManager.setTestProviderEnabled(providerName, true)
+        if (action == "START_MOCK") {
+            val lat = intent.getDoubleExtra("LAT", 0.0)
+            val lng = intent.getDoubleExtra("LNG", 0.0)
 
-            timer = Timer().apply {
-                scheduleAtFixedRate(object : TimerTask() {
-                    override fun run() {
-                        val mockLocation = Location(providerName).apply {
-                            latitude = lat
-                            longitude = lng
-                            altitude = 10.0
-                            accuracy = 1.0f
-                            time = System.currentTimeMillis()
-                            elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
-                        }
-                        locationManager.setTestProviderLocation(providerName, mockLocation)
-                    }
-                }, 0, 1000)
-            }
-        } catch (e: SecurityException) {
+            val notification = createNotification("Mocking Location: $lat, $lng")
+            startForeground(1, notification)
+
+            setMockLocation(lat, lng)
+        } else if (action == "STOP_MOCK") {
+            stopMockLocation()
+            stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
+
+        return START_NOT_STICKY
     }
 
-    private fun stopMocking() {
-        timer?.cancel()
+    private fun setMockLocation(lat: Double, lng: Double) {
         try {
-            locationManager.removeTestProvider(providerName)
-        } catch (_: Exception) {}
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+            val provider = LocationManager.GPS_PROVIDER
+            locationManager?.addTestProvider(
+                provider,
+                false, false, false, false, true, true, true,
+                ProviderProperties.POWER_USAGE_LOW,
+                ProviderProperties.ACCURACY_FINE
+            )
+            locationManager?.setTestProviderEnabled(provider, true)
+
+            val mockLocation = Location(provider).apply {
+                latitude = lat
+                longitude = lng
+                altitude = 3.0
+                time = System.currentTimeMillis()
+                accuracy = 1.0f
+                elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
+            }
+
+            locationManager?.setTestProviderLocation(provider, mockLocation)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    private fun startForegroundServiceNotification() {
-        val channelId = "mock_location_channel"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Mock GPS Service", NotificationManager.IMPORTANCE_LOW)
-            getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
+    private fun stopMockLocation() {
+        try {
+            val provider = LocationManager.GPS_PROVIDER
+            locationManager?.removeTestProvider(provider)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        val notification = Notification.Builder(this, channelId)
-            .setContentTitle("Mock GPS Active")
+    }
+
+    private fun createNotification(content: String): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("QuickMock Active")
+            .setContentText(content)
             .setSmallIcon(android.R.drawable.ic_menu_compass)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
-        startForeground(1, notification)
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Mock Location Channel",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager?.createNotificationChannel(channel)
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
