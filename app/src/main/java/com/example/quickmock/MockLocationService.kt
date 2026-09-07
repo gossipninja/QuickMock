@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
-import android.location.provider.ProviderProperties
 import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
@@ -38,7 +37,12 @@ class MockLocationService : Service() {
             setMockLocation(lat, lng)
         } else if (action == "STOP_MOCK") {
             stopMockLocation()
-            stopForeground(STOP_FOREGROUND_REMOVE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+            } else {
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+            }
             stopSelf()
         }
 
@@ -48,11 +52,12 @@ class MockLocationService : Service() {
     private fun setMockLocation(lat: Double, lng: Double) {
         try {
             val provider = LocationManager.GPS_PROVIDER
+            
+            @Suppress("DEPRECATION")
             locationManager?.addTestProvider(
                 provider,
                 false, false, false, false, true, true, true,
-                ProviderProperties.POWER_USAGE_LOW,
-                ProviderProperties.ACCURACY_FINE
+                1, 1
             )
             locationManager?.setTestProviderEnabled(provider, true)
 

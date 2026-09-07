@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.widget.RemoteViews
 
 class MockWidgetProvider : AppWidgetProvider() {
@@ -75,7 +76,11 @@ class MockWidgetProvider : AppWidgetProvider() {
                 serviceIntent.action = "START_MOCK"
                 serviceIntent.putExtra("LAT", intent.getDoubleExtra("EXTRA_LAT", 0.0))
                 serviceIntent.putExtra("LNG", intent.getDoubleExtra("EXTRA_LNG", 0.0))
-                context.startForegroundService(serviceIntent)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(serviceIntent)
+                } else {
+                    context.startService(serviceIntent)
+                }
             }
             "com.example.quickmock.ACTION_CLEAR_MOCK" -> {
                 serviceIntent.action = "STOP_MOCK"
