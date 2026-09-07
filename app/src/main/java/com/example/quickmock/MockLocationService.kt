@@ -9,7 +9,9 @@ import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 
@@ -17,6 +19,19 @@ class MockLocationService : Service() {
 
     private val CHANNEL_ID = "MockLocationServiceChannel"
     private var locationManager: LocationManager? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var activeLat: Double = 0.0
+    private var activeLng: Double = 0.0
+    private var isMocking = false
+
+    private val mockRunnable = object : Runnable {
+        override fun run() {
+            if (isMocking) {
+                pushMockLocation(activeLat, activeLng)
+                handler.postDelayed(this, 1000)
+            }
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -25,39 +40,40 @@ class MockLocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val action = intent?.action
+        when (intent?.action) {
+            "START_MOCK" -> {
+                activeLat = intent.getDoubleExtra("LAT", 0.0)
+                activeLng = intent.getDoubleExtra("LNG", 0.0)
+                isMocking = true
 
-        if (action == "START_MOCK") {
-            val lat = intent.getDoubleExtra("LAT", 0.0)
-            val lng = intent.getDoubleExtra("LNG", 0.0)
+                val notification = createNotification("Active: $activeLat, $activeLng")
+                startForeground(1, notification)
 
-            val notification = createNotification("Mocking Location: $lat, $lng")
-            startForeground(1, notification)
-
-            setMockLocation(lat, lng)
-        } else if (action == "STOP_MOCK") {
-            stopMockLocation()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                stopForeground(STOP_FOREGROUND_REMOVE)
-            } else {
-                @Suppress("DEPRECATION")
-                stopForeground(true)
+                handler.removeCallbacks(mockRunnable)
+                handler.post(mockRunnable)
             }
-            stopSelf()
+            "STOP_MOCK" -> {
+                isMocking = false
+                handler.removeCallbacks(mockRunnable)
+                stopMockProvider()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                } else {
+                    @Suppress("DEPRECATION")
+                    stopForeground(true)
+                }
+                stopSelf()
+            }
         }
-
         return START_NOT_STICKY
     }
 
-    private fun setMockLocation(lat: Double, lng: Double) {
+    private fun pushMockLocation(lat: Double, lng: Double) {
         try {
             val provider = LocationManager.GPS_PROVIDER
-            
             @Suppress("DEPRECATION")
             locationManager?.addTestProvider(
-                provider,
-                false, false, false, false, true, true, true,
-                1, 1
+                provider, false, false, false, false, true, true, true, 1, 1
             )
             locationManager?.setTestProviderEnabled(provider, true)
 
@@ -69,27 +85,21 @@ class MockLocationService : Service() {
                 accuracy = 1.0f
                 elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
             }
-
             locationManager?.setTestProviderLocation(provider, mockLocation)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        } catch (_: Exception) {}
     }
 
-    private fun stopMockLocation() {
+    private fun stopMockProvider() {
         try {
-            val provider = LocationManager.GPS_PROVIDER
-            locationManager?.removeTestProvider(provider)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+            locationManager?.removeTestProvider(LocationManager.GPS_PROVIDER)
+        } catch (_: Exception) {}
     }
 
     private fun createNotification(content: String): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("QuickMock Active")
+            .setContentTitle("QuickMock Spoofing Active")
             .setContentText(content)
-            .setSmallIcon(android.R.drawable.ic_menu_compass)
+            .setSmallIcon(R.drawable.ic_compass)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
     }
@@ -97,12 +107,9 @@ class MockLocationService : Service() {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Mock Location Channel",
-                NotificationManager.IMPORTANCE_LOW
+                CHANNEL_ID, "Mock Location Channel", NotificationManager.IMPORTANCE_LOW
             )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager?.createNotificationChannel(channel)
+            getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         }
     }
 

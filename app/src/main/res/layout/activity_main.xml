@@ -17,25 +17,22 @@
             android:textStyle="bold"
             android:layout_marginBottom="16dp" />
 
-        <!-- Location 1 -->
+        <!-- Slots 1 - 4 -->
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 1" android:textStyle="bold" />
-        <EditText android:id="@+id/edit_name_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label (e.g. Home)" />
+        <EditText android:id="@+id/edit_name_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
         <EditText android:id="@+id/edit_lat_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
         <EditText android:id="@+id/edit_lng_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
 
-        <!-- Location 2 -->
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 2" android:textStyle="bold" />
-        <EditText android:id="@+id/edit_name_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label (e.g. Work)" />
+        <EditText android:id="@+id/edit_name_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
         <EditText android:id="@+id/edit_lat_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
         <EditText android:id="@+id/edit_lng_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
 
-        <!-- Location 3 -->
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 3" android:textStyle="bold" />
         <EditText android:id="@+id/edit_name_3" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
         <EditText android:id="@+id/edit_lat_3" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
         <EditText android:id="@+id/edit_lng_3" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
 
-        <!-- Location 4 -->
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 4" android:textStyle="bold" />
         <EditText android:id="@+id/edit_name_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
         <EditText android:id="@+id/edit_lat_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
@@ -46,6 +43,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Save &amp; Update Widget" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#CCCCCC"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Credits &amp; Info"
+            android:textStyle="bold"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="QuickMock v1.0\nBuilt for rapid location mock testing via App Widgets."
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp" />
 
     </LinearLayout>
 </ScrollView>
