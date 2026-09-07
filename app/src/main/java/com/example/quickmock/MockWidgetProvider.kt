@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.widget.RemoteViews
 
 class MockWidgetProvider : AppWidgetProvider() {
@@ -20,7 +21,7 @@ class MockWidgetProvider : AppWidgetProvider() {
         super.onReceive(context)
 
         val appWidgetManager = AppWidgetManager.getInstance(context)
-        val ids = appWidgetManager.getAppWidgetIds(ComponentName(context, MockWidgetProvider::class.java))
+        val ids = appWidgetManager.getAppWidgetIds(ComponentName(context, MockWidgetProvider::class.java)) ?: intArrayOf()
 
         when (intent.action) {
             "ACTION_SLOT_CLICK" -> {
@@ -88,9 +89,11 @@ class MockWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(slotButtons[i], pendingIntent)
 
             if (slotIdx == activeSlot && isMocking) {
-                views.setInt(slotButtons[i], "setBackgroundResource", R.drawable.widget_button_active_bg)
+                views.setInt(slotButtons[i], "setBackgroundColor", Color.parseColor("#4CAF50"))
+                views.setTextColor(slotButtons[i], Color.WHITE)
             } else {
-                views.setInt(slotButtons[i], "setBackgroundResource", android.R.drawable.btn_default)
+                views.setInt(slotButtons[i], "setBackgroundColor", Color.parseColor("#333333"))
+                views.setTextColor(slotButtons[i], Color.WHITE)
             }
         }
 
