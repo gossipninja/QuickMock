@@ -1,15 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
     android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="QuickMock Running"
-        android:textSize="18sp" />
+        android:orientation="vertical">
 
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="QuickMock Location Configuration"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Location 1 -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 1" android:textStyle="bold" />
+        <EditText android:id="@+id/edit_name_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label (e.g. Home)" />
+        <EditText android:id="@+id/edit_lat_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
+        <EditText android:id="@+id/edit_lng_1" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
+
+        <!-- Location 2 -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 2" android:textStyle="bold" />
+        <EditText android:id="@+id/edit_name_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label (e.g. Work)" />
+        <EditText android:id="@+id/edit_lat_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
+        <EditText android:id="@+id/edit_lng_2" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
+
+        <!-- Location 3 -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 3" android:textStyle="bold" />
+        <EditText android:id="@+id/edit_name_3" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
+        <EditText android:id="@+id/edit_lat_3" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
+        <EditText android:id="@+id/edit_lng_3" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="12dp" />
+
+        <!-- Location 4 -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Slot 4" android:textStyle="bold" />
+        <EditText android:id="@+id/edit_name_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Label" />
+        <EditText android:id="@+id/edit_lat_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Latitude" android:inputType="numberDecimal|numberSigned" />
+        <EditText android:id="@+id/edit_lng_4" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Longitude" android:inputType="numberDecimal|numberSigned" android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save &amp; Update Widget" />
+
+    </LinearLayout>
+</ScrollView>
