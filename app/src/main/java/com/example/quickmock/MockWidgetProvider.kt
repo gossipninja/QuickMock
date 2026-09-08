@@ -9,7 +9,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.location.LocationManager
 import android.widget.RemoteViews
-import android.widget.Toast
 
 class MockWidgetProvider : AppWidgetProvider() {
 
@@ -27,50 +26,47 @@ class MockWidgetProvider : AppWidgetProvider() {
         val ids = appWidgetManager.getAppWidgetIds(ComponentName(context, MockWidgetProvider::class.java)) ?: intArrayOf()
 
         when (intent.action) {
-            "ACTION_SLOT_CLICK" -> {
+            "ACTION_SLOT_CLICK", "ACTION_TOGGLE_CLICK" -> {
                 if (!isMockAppSet(context)) {
-                    Toast.makeText(context, "Error: Set QuickMock as Mock Location App in Developer Settings", Toast.LENGTH_LONG).show()
+                    val warningIntent = Intent(context, MockWarningActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    context.startActivity(warningIntent)
+
                     for (id in ids) {
                         updateWidget(context, appWidgetManager, id, activeSlot = -1, isMocking = false)
                     }
                     return
                 }
 
-                val slot = intent.getIntExtra("SLOT", 1)
-                val prefs = context.getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
-                val name = prefs.getString("name_$slot", "Slot $slot") ?: "Slot $slot"
-                val lat = prefs.getFloat("lat_$slot", 0f).toDouble()
-                val lng = prefs.getFloat("lng_$slot", 0f).toDouble()
+                if (intent.action == "ACTION_SLOT_CLICK") {
+                    val slot = intent.getIntExtra("SLOT", 1)
+                    val prefs = context.getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
+                    val name = prefs.getString("name_$slot", "Slot $slot") ?: "Slot $slot"
+                    val lat = prefs.getFloat("lat_$slot", 0f).toDouble()
+                    val lng = prefs.getFloat("lng_$slot", 0f).toDouble()
 
-                val serviceIntent = Intent(context, MockLocationService::class.java).apply {
-                    action = "START_MOCK"
-                    putExtra("LAT", lat)
-                    putExtra("LNG", lng)
-                    putExtra("NAME", name)
-                    putExtra("SLOT", slot)
-                }
-                context.startForegroundService(serviceIntent)
+                    val serviceIntent = Intent(context, MockLocationService::class.java).apply {
+                        action = "START_MOCK"
+                        putExtra("LAT", lat)
+                        putExtra("LNG", lng)
+                        putExtra("NAME", name)
+                        putExtra("SLOT", slot)
+                    }
+                    context.startForegroundService(serviceIntent)
 
-                for (id in ids) {
-                    updateWidget(context, appWidgetManager, id, activeSlot = slot, isMocking = true)
-                }
-            }
-            "ACTION_TOGGLE_CLICK" -> {
-                if (!isMockAppSet(context)) {
-                    Toast.makeText(context, "Error: Set QuickMock as Mock Location App in Developer Settings", Toast.LENGTH_LONG).show()
+                    for (id in ids) {
+                        updateWidget(context, appWidgetManager, id, activeSlot = slot, isMocking = true)
+                    }
+                } else {
+                    val serviceIntent = Intent(context, MockLocationService::class.java).apply {
+                        action = "STOP_MOCK"
+                    }
+                    context.startService(serviceIntent)
+
                     for (id in ids) {
                         updateWidget(context, appWidgetManager, id, activeSlot = -1, isMocking = false)
                     }
-                    return
-                }
-
-                val serviceIntent = Intent(context, MockLocationService::class.java).apply {
-                    action = "STOP_MOCK"
-                }
-                context.startService(serviceIntent)
-
-                for (id in ids) {
-                    updateWidget(context, appWidgetManager, id, activeSlot = -1, isMocking = false)
                 }
             }
             "UPDATE_WIDGET_STATE" -> {
@@ -90,6 +86,7 @@ class MockWidgetProvider : AppWidgetProvider() {
             @Suppress("DEPRECATION")
             lm.addTestProvider(provider, false, false, false, false, true, true, true, 1, 1)
             lm.setTestProviderEnabled(provider, true)
+            lm.removeTestProvider(provider)
             true
         } catch (e: SecurityException) {
             false
