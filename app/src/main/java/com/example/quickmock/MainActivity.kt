@@ -7,9 +7,11 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
-import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +22,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,11 +42,7 @@ class MainActivity : AppCompatActivity() {
         val containerSlots = findViewById<LinearLayout>(R.id.container_slots)
 
         btnGetCoords.setOnClickListener { fetchCurrentLocationAndPromptSlot() }
-
-        btnLookup.setOnClickListener {
-            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.latlong.net/"))
-            startActivity(browserIntent)
-        }
+        btnLookup.setOnClickListener { showNativeGeocoderDialog() }
 
         val inflater = LayoutInflater.from(this)
         val prefs = getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
@@ -118,6 +117,79 @@ class MainActivity : AppCompatActivity() {
             }
 
             containerSlots.addView(cardView)
+        }
+    }
+
+    private fun showNativeGeocoderDialog() {
+        val input = EditText(this).apply {
+            hint = "e.g. 1600 Amphitheatre Pkwy, Mountain View, CA"
+            setPadding(32, 24, 32, 24)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Lookup Address")
+            .setMessage("Enter an address or landmark to retrieve GPS coordinates:")
+            .setView(input)
+            .setPositiveButton("Lookup") { _, _ ->
+                val query = input.text.toString().trim()
+                if (query.isNotEmpty()) {
+                    performGeocoding(query)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun performGeocoding(query: String) {
+        if (!Geocoder.isPresent()) {
+            Toast.makeText(this, "Geocoder is not available on this device", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val geocoder = Geocoder(this, Locale.getDefault())
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            geocoder.getFromLocationName(query, 1, object : Geocoder.GeocodeListener {
+                override fun onGeocode(addresses: MutableList<Address>) {
+                    runOnUiThread { handleGeocodeResult(addresses.firstOrNull(), query) }
+                }
+
+                override fun onError(errorMessage: String?) {
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity, "Lookup failed: $errorMessage", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
+        } else {
+            try {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocationName(query, 1)
+                handleGeocodeResult(addresses?.firstOrNull(), query)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Geocoding failed: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun handleGeocodeResult(address: Address?, query: String) {
+        if (address != null) {
+            val lat = address.latitude.toFloat()
+            val lng = address.longitude.toFloat()
+
+            currentLat = address.latitude
+            currentLng = address.longitude
+            tvCurrentCoords.text = "Current GPS: $lat, $lng"
+
+            AlertDialog.Builder(this)
+                .setTitle("Address Found")
+                .setMessage("Address: ${address.getAddressLine(0) ?: query}\n\nLat: $lat\nLng: $lng")
+                .setPositiveButton("Assign to Slot") { _, _ ->
+                    promptSlotSelection(lat, lng)
+                }
+                .setNegativeButton("Close", null)
+                .show()
+        } else {
+            Toast.makeText(this, "No location coordinates found for '$query'", Toast.LENGTH_SHORT).show()
         }
     }
 
