@@ -55,29 +55,19 @@ class MainActivity : AppCompatActivity() {
             val etName = cardView.findViewById<EditText>(R.id.et_slot_name)
             val etLat = cardView.findViewById<EditText>(R.id.et_slot_lat)
             val etLng = cardView.findViewById<EditText>(R.id.et_slot_lng)
-            val btnFillCurrent = cardView.findViewById<Button>(R.id.btn_fill_current_loc)
             val btnSave = cardView.findViewById<Button>(R.id.btn_save_slot)
             val btnClear = cardView.findViewById<Button>(R.id.btn_clear_slot)
 
             tvHeader.text = "Slot $i"
-            etName.setText(prefs.getString("name_$i", "Slot $i"))
+            etName.setText(prefs.getString("name_$i", ""))
             etLat.setText(prefs.getFloat("lat_$i", 0f).toString())
             etLng.setText(prefs.getFloat("lng_$i", 0f).toString())
 
-            btnFillCurrent.setOnClickListener {
-                if (currentLat != null && currentLng != null) {
-                    etLat.setText(currentLat.toString())
-                    etLng.setText(currentLng.toString())
-                } else {
-                    Toast.makeText(this, "Fetch GPS coordinates first using top button", Toast.LENGTH_SHORT).show()
-                }
-            }
-
             btnClear.setOnClickListener {
-                etName.setText("Slot $i")
+                etName.setText("")
                 etLat.setText("0.0")
                 etLng.setText("0.0")
-                saveSlotData(i, "Slot $i", 0f, 0f)
+                saveSlotData(i, "", 0f, 0f)
                 Toast.makeText(this, "Cleared Slot $i", Toast.LENGTH_SHORT).show()
             }
 
@@ -86,8 +76,8 @@ class MainActivity : AppCompatActivity() {
                 val latStr = etLat.text.toString().trim()
                 val lngStr = etLng.text.toString().trim()
 
-                if (name.isEmpty() || latStr.isEmpty() || lngStr.isEmpty()) {
-                    Toast.makeText(this, "Please complete all fields for Slot $i", Toast.LENGTH_SHORT).show()
+                if (latStr.isEmpty() || lngStr.isEmpty()) {
+                    Toast.makeText(this, "Please enter coordinates for Slot $i", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
 
@@ -100,12 +90,11 @@ class MainActivity : AppCompatActivity() {
 
                 val existingLat = prefs.getFloat("lat_$i", 0f)
                 val existingLng = prefs.getFloat("lng_$i", 0f)
-                val existingName = prefs.getString("name_$i", "Slot $i") ?: "Slot $i"
 
                 if (existingLat != 0f || existingLng != 0f) {
                     AlertDialog.Builder(this)
                         .setTitle("Overwrite Slot $i?")
-                        .setMessage("Slot $i is currently set to '$existingName' ($existingLat, $existingLng). Are you sure you want to overwrite it?")
+                        .setMessage("Slot $i is currently saved ($existingLat, $existingLng). Overwrite it?")
                         .setPositiveButton("Overwrite") { _, _ ->
                             saveSlotData(i, name, lat, lng)
                         }
@@ -231,12 +220,12 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
         val existingLat = prefs.getFloat("lat_$slot", 0f)
         val existingLng = prefs.getFloat("lng_$slot", 0f)
-        val existingName = prefs.getString("name_$slot", "Slot $slot") ?: "Slot $slot"
+        val existingName = prefs.getString("name_$slot", "") ?: ""
 
         if (existingLat != 0f || existingLng != 0f) {
             AlertDialog.Builder(this)
                 .setTitle("Slot $slot Occupied")
-                .setMessage("Slot $slot currently has saved coordinates ('$existingName': $existingLat, $existingLng). Please clear Slot $slot first before overwriting via GPS fetch.")
+                .setMessage("Slot $slot currently has saved coordinates ($existingLat, $existingLng). Please clear Slot $slot first.")
                 .setPositiveButton("OK", null)
                 .show()
         } else {

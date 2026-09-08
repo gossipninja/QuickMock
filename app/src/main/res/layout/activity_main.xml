@@ -35,7 +35,7 @@
                 android:id="@+id/btn_get_current_loc_global"
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="60dp"
                 android:layout_weight="1"
                 android:text="Fetch GPS and set slot #" />
 
@@ -43,7 +43,7 @@
                 android:id="@+id/btn_lookup_address"
                 style="?android:attr/buttonStyleSmall"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="60dp"
                 android:layout_weight="1"
                 android:text="Lookup Address" />
         </LinearLayout>

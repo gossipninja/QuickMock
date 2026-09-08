@@ -43,7 +43,8 @@ class MockWidgetProvider : AppWidgetProvider() {
                 if (intent.action == "ACTION_SLOT_CLICK") {
                     val slot = intent.getIntExtra("SLOT", 1)
                     val prefs = context.getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
-                    val name = prefs.getString("name_$slot", "Slot $slot") ?: "Slot $slot"
+                    val name = prefs.getString("name_$slot", "") ?: ""
+                    val displayName = if (name.isEmpty()) "Slot $slot" else name
                     val lat = prefs.getFloat("lat_$slot", 0f).toDouble()
                     val lng = prefs.getFloat("lng_$slot", 0f).toDouble()
 
@@ -51,7 +52,7 @@ class MockWidgetProvider : AppWidgetProvider() {
                         action = "START_MOCK"
                         putExtra("LAT", lat)
                         putExtra("LNG", lng)
-                        putExtra("NAME", name)
+                        putExtra("NAME", displayName)
                         putExtra("SLOT", slot)
                     }
                     context.startForegroundService(serviceIntent)
@@ -104,17 +105,23 @@ class MockWidgetProvider : AppWidgetProvider() {
             R.id.btn_slot_7, R.id.btn_slot_8, R.id.btn_slot_9
         )
 
-        for (i in 0 until 9) {
-            val slotIdx = i + 1
-            val name = prefs.getString("name_$slotIdx", "Slot $slotIdx")
-            val lat = prefs.getFloat("lat_$slotIdx", 0f)
-            val lng = prefs.getFloat("lng_$slotIdx", 0f)
+        val activeSlots = mutableListOf<Int>()
+        for (i in 1..9) {
+            val lat = prefs.getFloat("lat_$i", 0f)
+            val lng = prefs.getFloat("lng_$i", 0f)
+            if (lat != 0f || lng != 0f) {
+                activeSlots.add(i)
+            }
+        }
 
-            if (lat == 0f && lng == 0f) {
-                views.setViewVisibility(slotButtons[i], View.GONE)
-            } else {
-                views.setViewVisibility(slotButtons[i], View.VISIBLE)
-                views.setTextViewText(slotButtons[i], if (name.isNullOrEmpty()) "Slot $slotIdx" else name)
+        for (btnIdx in 0 until 9) {
+            if (btnIdx < activeSlots.size) {
+                val slotIdx = activeSlots[btnIdx]
+                val name = prefs.getString("name_$slotIdx", "")
+                val displayName = if (name.isNullOrEmpty()) "Slot $slotIdx" else name
+
+                views.setViewVisibility(slotButtons[btnIdx], View.VISIBLE)
+                views.setTextViewText(slotButtons[btnIdx], displayName)
 
                 val clickIntent = Intent(context, MockWidgetProvider::class.java).apply {
                     action = "ACTION_SLOT_CLICK"
@@ -123,19 +130,20 @@ class MockWidgetProvider : AppWidgetProvider() {
                 val pendingIntent = PendingIntent.getBroadcast(
                     context, slotIdx, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                views.setOnClickPendingIntent(slotButtons[i], pendingIntent)
+                views.setOnClickPendingIntent(slotButtons[btnIdx], pendingIntent)
 
                 if (slotIdx == activeSlot && isMocking) {
-                    views.setInt(slotButtons[i], "setBackgroundColor", Color.parseColor("#4CAF50"))
-                    views.setTextColor(slotButtons[i], Color.WHITE)
+                    views.setInt(slotButtons[btnIdx], "setBackgroundColor", Color.parseColor("#4CAF50"))
+                    views.setTextColor(slotButtons[btnIdx], Color.WHITE)
                 } else {
-                    views.setInt(slotButtons[i], "setBackgroundColor", Color.parseColor("#333333"))
-                    views.setTextColor(slotButtons[i], Color.WHITE)
+                    views.setInt(slotButtons[btnIdx], "setBackgroundColor", Color.parseColor("#333333"))
+                    views.setTextColor(slotButtons[btnIdx], Color.WHITE)
                 }
+            } else {
+                views.setViewVisibility(slotButtons[btnIdx], View.GONE)
             }
         }
 
-        // Toggle Play/Pause icon
         views.setTextViewText(R.id.btn_toggle_mock, if (isMocking) "⏸" else "▶")
         val toggleIntent = Intent(context, MockWidgetProvider::class.java).apply {
             action = "ACTION_TOGGLE_CLICK"
@@ -145,7 +153,6 @@ class MockWidgetProvider : AppWidgetProvider() {
         )
         views.setOnClickPendingIntent(R.id.btn_toggle_mock, togglePendingIntent)
 
-        // Find location button opens MainActivity
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
