@@ -87,11 +87,17 @@ class MainActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
 
-                val existingName = prefs.getString("name_$i", null)
-                if (!existingName.isNullOrEmpty()) {
+                val existingLat = prefs.getFloat("lat_$i", 0f)
+                val existingLng = prefs.getFloat("lng_$i", 0f)
+                val existingName = prefs.getString("name_$i", "Slot $i") ?: "Slot $i"
+
+                // Check if the slot already has saved coordinates (non-zero)
+                val hasCoordinatesSaved = existingLat != 0f || existingLng != 0f
+
+                if (hasCoordinatesSaved) {
                     AlertDialog.Builder(this)
                         .setTitle("Overwrite Slot $i?")
-                        .setMessage("Slot $i is currently set to '$existingName'. Are you sure you want to overwrite it?")
+                        .setMessage("Slot $i is currently set to '$existingName' ($existingLat, $existingLng). Are you sure you want to overwrite it?")
                         .setPositiveButton("Overwrite") { _, _ ->
                             saveSlotData(i, name, lat, lng)
                         }
