@@ -22,15 +22,31 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="12dp"
-            android:text="Ensure QuickMock is selected under Developer Options -> Select mock location app. Save coordinates below to populate your widget slots."
+            android:text="Ensure QuickMock is selected under Developer Options -> Select mock location app."
             android:textColor="#666666"
             android:textSize="13sp" />
 
-        <Button
-            android:id="@+id/btn_get_current_loc_global"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Fetch Current GPS Coordinates" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_get_current_loc_global"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Fetch GPS" />
+
+            <Button
+                android:id="@+id/btn_lookup_address"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Lookup Address" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tv_current_coords"
@@ -42,7 +58,6 @@
             android:textColor="#444444"
             android:textSize="12sp" />
 
-        <!-- Container for dynamically populated slot cards -->
         <LinearLayout
             android:id="@+id/container_slots"
             android:layout_width="match_parent"
@@ -55,7 +70,7 @@
             android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
             android:gravity="center"
-            android:text="QuickMock • Built for Rapid Location Mocking"
+            android:text="QuickMock • Rapid Location Mocking"
             android:textColor="#888888"
             android:textSize="12sp" />
 

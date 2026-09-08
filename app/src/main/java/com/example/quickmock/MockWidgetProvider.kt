@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.location.LocationManager
+import android.view.View
 import android.widget.RemoteViews
 
 class MockWidgetProvider : AppWidgetProvider() {
@@ -88,8 +89,6 @@ class MockWidgetProvider : AppWidgetProvider() {
             lm.setTestProviderEnabled(provider, true)
             lm.removeTestProvider(provider)
             true
-        } catch (e: SecurityException) {
-            false
         } catch (e: Exception) {
             false
         }
@@ -108,28 +107,36 @@ class MockWidgetProvider : AppWidgetProvider() {
         for (i in 0 until 9) {
             val slotIdx = i + 1
             val name = prefs.getString("name_$slotIdx", "Slot $slotIdx")
-            views.setTextViewText(slotButtons[i], if (name.isNullOrEmpty()) "Slot $slotIdx" else name)
+            val lat = prefs.getFloat("lat_$slotIdx", 0f)
+            val lng = prefs.getFloat("lng_$slotIdx", 0f)
 
-            val clickIntent = Intent(context, MockWidgetProvider::class.java).apply {
-                action = "ACTION_SLOT_CLICK"
-                putExtra("SLOT", slotIdx)
-            }
-            val pendingIntent = PendingIntent.getBroadcast(
-                context, slotIdx, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(slotButtons[i], pendingIntent)
-
-            if (slotIdx == activeSlot && isMocking) {
-                views.setInt(slotButtons[i], "setBackgroundColor", Color.parseColor("#4CAF50"))
-                views.setTextColor(slotButtons[i], Color.WHITE)
+            if (lat == 0f && lng == 0f) {
+                views.setViewVisibility(slotButtons[i], View.GONE)
             } else {
-                views.setInt(slotButtons[i], "setBackgroundColor", Color.parseColor("#333333"))
-                views.setTextColor(slotButtons[i], Color.WHITE)
+                views.setViewVisibility(slotButtons[i], View.VISIBLE)
+                views.setTextViewText(slotButtons[i], if (name.isNullOrEmpty()) "Slot $slotIdx" else name)
+
+                val clickIntent = Intent(context, MockWidgetProvider::class.java).apply {
+                    action = "ACTION_SLOT_CLICK"
+                    putExtra("SLOT", slotIdx)
+                }
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context, slotIdx, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                views.setOnClickPendingIntent(slotButtons[i], pendingIntent)
+
+                if (slotIdx == activeSlot && isMocking) {
+                    views.setInt(slotButtons[i], "setBackgroundColor", Color.parseColor("#4CAF50"))
+                    views.setTextColor(slotButtons[i], Color.WHITE)
+                } else {
+                    views.setInt(slotButtons[i], "setBackgroundColor", Color.parseColor("#333333"))
+                    views.setTextColor(slotButtons[i], Color.WHITE)
+                }
             }
         }
 
-        views.setTextViewText(R.id.btn_toggle_mock, if (isMocking) "Stop Mocking" else "Start Mocking")
-
+        // Toggle Play/Pause icon
+        views.setTextViewText(R.id.btn_toggle_mock, if (isMocking) "⏸" else "▶")
         val toggleIntent = Intent(context, MockWidgetProvider::class.java).apply {
             action = "ACTION_TOGGLE_CLICK"
         }
@@ -137,6 +144,15 @@ class MockWidgetProvider : AppWidgetProvider() {
             context, 100, toggleIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         views.setOnClickPendingIntent(R.id.btn_toggle_mock, togglePendingIntent)
+
+        // Find location button opens MainActivity
+        val openAppIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val openAppPendingIntent = PendingIntent.getActivity(
+            context, 101, openAppIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setOnClickPendingIntent(R.id.btn_find_location, openAppPendingIntent)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
