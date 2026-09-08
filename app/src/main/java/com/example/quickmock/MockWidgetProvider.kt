@@ -12,13 +12,14 @@ import android.widget.RemoteViews
 class MockWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        super.onUpdate(context, appWidgetManager, appWidgetIds)
         for (appWidgetId in appWidgetIds) {
             updateWidget(context, appWidgetManager, appWidgetId, activeSlot = -1, isMocking = false)
         }
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context)
+        super.onReceive(context, intent)
 
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val ids = appWidgetManager.getAppWidgetIds(ComponentName(context, MockWidgetProvider::class.java)) ?: intArrayOf()
