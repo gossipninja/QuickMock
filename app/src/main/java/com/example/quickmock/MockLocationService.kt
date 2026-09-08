@@ -52,8 +52,15 @@ class MockLocationService : Service() {
                 activeLng = intent.getDoubleExtra("LNG", 0.0)
                 activeName = intent.getStringExtra("NAME") ?: "Custom Spot"
                 activeSlot = intent.getIntExtra("SLOT", -1)
-                isMocking = true
 
+                if (!canMockLocation()) {
+                    Toast.makeText(this, "Error: Set QuickMock as Mock Location App in Developer Settings", Toast.LENGTH_LONG).show()
+                    notifyWidgetState(-1, false)
+                    stopSelf()
+                    return START_NOT_STICKY
+                }
+
+                isMocking = true
                 val notification = createNotification("Mocking: $activeName ($activeLat, $activeLng)")
                 startForeground(1, notification)
 
@@ -82,7 +89,7 @@ class MockLocationService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun pushMockLocation(lat: Double, lng: Double): Boolean {
+    private fun canMockLocation(): Boolean {
         return try {
             val provider = LocationManager.GPS_PROVIDER
             @Suppress("DEPRECATION")
@@ -90,7 +97,17 @@ class MockLocationService : Service() {
                 provider, false, false, false, false, true, true, true, 1, 1
             )
             locationManager?.setTestProviderEnabled(provider, true)
+            true
+        } catch (e: SecurityException) {
+            false
+        } catch (e: Exception) {
+            false
+        }
+    }
 
+    private fun pushMockLocation(lat: Double, lng: Double): Boolean {
+        return try {
+            val provider = LocationManager.GPS_PROVIDER
             val mockLocation = Location(provider).apply {
                 latitude = lat
                 longitude = lng
