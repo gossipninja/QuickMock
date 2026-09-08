@@ -91,21 +91,8 @@ class MainActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
 
-                val existingLat = prefs.getFloat("lat_$i", 0f)
-                val existingLng = prefs.getFloat("lng_$i", 0f)
-
-                if (existingLat != 0f || existingLng != 0f) {
-                    AlertDialog.Builder(this)
-                        .setTitle("Overwrite Slot $i?")
-                        .setMessage("Slot $i is currently saved ($existingLat, $existingLng). Overwrite it?")
-                        .setPositiveButton("Overwrite") { _, _ ->
-                            saveSlotData(i, name, lat, lng)
-                        }
-                        .setNegativeButton("Cancel", null)
-                        .show()
-                } else {
-                    saveSlotData(i, name, lat, lng)
-                }
+                saveSlotData(i, name, lat, lng)
+                Toast.makeText(this, "Saved Slot $i", Toast.LENGTH_SHORT).show()
             }
 
             containerSlots.addView(cardView)
@@ -236,7 +223,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun promptSlotSelection(lat: Float, lng: Float, defaultName: String?) {
-        val slotOptions = Array(9) { i -> "Slot ${i + 1}" }
+        val prefs = getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
+        val slotOptions = Array(9) { i ->
+            val slotNum = i + 1
+            val name = prefs.getString("name_$slotNum", "") ?: ""
+            if (name.isNotEmpty()) "Slot $slotNum - $name" else "Slot $slotNum"
+        }
 
         AlertDialog.Builder(this)
             .setTitle("Select Target Slot")
