@@ -216,7 +216,7 @@ class MainActivity : AppCompatActivity() {
             currentLng = loc.longitude
             tvCurrentCoords.text = "Current GPS: ${loc.latitude}, ${loc.longitude}"
 
-            promptSlotSelection(loc.latitude.toFloat(), loc.longitude.toFloat(), defaultName = null)
+            promptSlotSelection(loc.latitude.toFloat(), loc.longitude.toFloat(), defaultName = "Manual Save")
         } else {
             Toast.makeText(this, "Unable to determine current GPS location", Toast.LENGTH_SHORT).show()
         }

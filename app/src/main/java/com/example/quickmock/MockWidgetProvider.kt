@@ -8,159 +8,113 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.location.LocationManager
-import android.view.View
 import android.widget.RemoteViews
 
 class MockWidgetProvider : AppWidgetProvider() {
 
-    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        super.onUpdate(context, appWidgetManager, appWidgetIds)
-        for (appWidgetId in appWidgetIds) {
-            updateWidget(context, appWidgetManager, appWidgetId, activeSlot = -1, isMocking = false)
-        }
-    }
-
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
 
-        val appWidgetManager = AppWidgetManager.getInstance(context)
-        val ids = appWidgetManager.getAppWidgetIds(ComponentName(context, MockWidgetProvider::class.java)) ?: intArrayOf()
+        if (intent.action == LocationManager.PROVIDERS_CHANGED_ACTION) {
+            val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val isGpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            
+            if (!isGpsEnabled) {
+                val prefs = context.getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putBoolean("is_mocking", false).apply()
+            }
+            updateAllWidgets(context)
+        }
+    }
 
-        when (intent.action) {
-            "ACTION_SLOT_CLICK", "ACTION_TOGGLE_CLICK" -> {
-                if (!isMockAppSet(context)) {
-                    val warningIntent = Intent(context, MockWarningActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    }
-                    context.startActivity(warningIntent)
+    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        for (appWidgetId in appWidgetIds) {
+            updateAppWidget(context, appWidgetManager, appWidgetId)
+        }
+    }
 
-                    for (id in ids) {
-                        updateWidget(context, appWidgetManager, id, activeSlot = -1, isMocking = false)
-                    }
-                    return
-                }
+    companion object {
+        fun updateAllWidgets(context: Context) {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val ids = appWidgetManager.getAppWidgetIds(ComponentName(context, MockWidgetProvider::class.java))
+            for (id in ids) {
+                updateAppWidget(context, appWidgetManager, id)
+            }
+        }
 
-                if (intent.action == "ACTION_SLOT_CLICK") {
-                    val slot = intent.getIntExtra("SLOT", 1)
-                    val prefs = context.getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
-                    val name = prefs.getString("name_$slot", "") ?: ""
-                    val displayName = if (name.isEmpty()) "Slot $slot" else name
-                    val lat = prefs.getFloat("lat_$slot", 0f).toDouble()
-                    val lng = prefs.getFloat("lng_$slot", 0f).toDouble()
+        fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+            val views = RemoteViews(context.packageName, R.layout.widget_mock)
+            val prefs = context.getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
 
-                    val serviceIntent = Intent(context, MockLocationService::class.java).apply {
-                        action = "START_MOCK"
-                        putExtra("LAT", lat)
-                        putExtra("LNG", lng)
-                        putExtra("NAME", displayName)
-                        putExtra("SLOT", slot)
-                    }
-                    context.startForegroundService(serviceIntent)
+            val activeSlot = prefs.getInt("active_slot", 1)
+            val isMocking = prefs.getBoolean("is_mocking", false)
 
-                    for (id in ids) {
-                        updateWidget(context, appWidgetManager, id, activeSlot = slot, isMocking = true)
-                    }
+            val lat = prefs.getFloat("lat_$activeSlot", 0f)
+            val lng = prefs.getFloat("lng_$activeSlot", 0f)
+            val hasValidLocation = (lat != 0f || lng != 0f)
+
+            val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val isGpsSystemOn = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+            val effectiveMocking = isMocking && isGpsSystemOn
+
+            val slotButtons = arrayOf(
+                R.id.btn_slot_1, R.id.btn_slot_2, R.id.btn_slot_3,
+                R.id.btn_slot_4, R.id.btn_slot_5, R.id.btn_slot_6,
+                R.id.btn_slot_7, R.id.btn_slot_8, R.id.btn_slot_9
+            )
+
+            // Material Design 3 Tone colors for selection state
+            val selectedColor = Color.parseColor("#388E3C") // Material Green 700 container tint
+            val defaultColor = Color.parseColor("#424242")  // Material Dark Surface tint
+
+            for (i in slotButtons.indices) {
+                val slotNum = i + 1
+                val btnId = slotButtons[i]
+                if (slotNum == activeSlot) {
+                    views.setInt(btnId, "setBackgroundColor", selectedColor)
                 } else {
-                    val serviceIntent = Intent(context, MockLocationService::class.java).apply {
-                        action = "STOP_MOCK"
-                    }
-                    context.startService(serviceIntent)
-
-                    for (id in ids) {
-                        updateWidget(context, appWidgetManager, id, activeSlot = -1, isMocking = false)
-                    }
+                    views.setInt(btnId, "setBackgroundColor", defaultColor)
                 }
-            }
-            "UPDATE_WIDGET_STATE" -> {
-                val activeSlot = intent.getIntExtra("ACTIVE_SLOT", -1)
-                val isMocking = intent.getBooleanExtra("IS_MOCKING", false)
-                for (id in ids) {
-                    updateWidget(context, appWidgetManager, id, activeSlot, isMocking)
+
+                val slotIntent = Intent(context, MockWidgetProvider::class.java).apply {
+                    action = "com.example.quickmock.ACTION_SELECT_SLOT"
+                    putExtra("slot_number", slotNum)
                 }
-            }
-        }
-    }
-
-    private fun isMockAppSet(context: Context): Boolean {
-        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return try {
-            val provider = LocationManager.GPS_PROVIDER
-            @Suppress("DEPRECATION")
-            lm.addTestProvider(provider, false, false, false, false, true, true, true, 1, 1)
-            lm.setTestProviderEnabled(provider, true)
-            lm.removeTestProvider(provider)
-            true
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int, activeSlot: Int, isMocking: Boolean) {
-        val views = RemoteViews(context.packageName, R.layout.widget_mock)
-        val prefs = context.getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
-
-        val slotButtons = intArrayOf(
-            R.id.btn_slot_1, R.id.btn_slot_2, R.id.btn_slot_3,
-            R.id.btn_slot_4, R.id.btn_slot_5, R.id.btn_slot_6,
-            R.id.btn_slot_7, R.id.btn_slot_8, R.id.btn_slot_9
-        )
-
-        val activeSlots = mutableListOf<Int>()
-        for (i in 1..9) {
-            val lat = prefs.getFloat("lat_$i", 0f)
-            val lng = prefs.getFloat("lng_$i", 0f)
-            if (lat != 0f || lng != 0f) {
-                activeSlots.add(i)
-            }
-        }
-
-        for (btnIdx in 0 until 9) {
-            if (btnIdx < activeSlots.size) {
-                val slotIdx = activeSlots[btnIdx]
-                val name = prefs.getString("name_$slotIdx", "")
-                val displayName = if (name.isNullOrEmpty()) "Slot $slotIdx" else name
-
-                views.setViewVisibility(slotButtons[btnIdx], View.VISIBLE)
-                views.setTextViewText(slotButtons[btnIdx], displayName)
-
-                val clickIntent = Intent(context, MockWidgetProvider::class.java).apply {
-                    action = "ACTION_SLOT_CLICK"
-                    putExtra("SLOT", slotIdx)
-                }
-                val pendingIntent = PendingIntent.getBroadcast(
-                    context, slotIdx, clickIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                val pi = PendingIntent.getBroadcast(
+                    context, slotNum, slotIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                views.setOnClickPendingIntent(slotButtons[btnIdx], pendingIntent)
-
-                if (slotIdx == activeSlot && isMocking) {
-                    views.setInt(slotButtons[btnIdx], "setBackgroundColor", Color.parseColor("#4CAF50"))
-                    views.setTextColor(slotButtons[btnIdx], Color.WHITE)
-                } else {
-                    views.setInt(slotButtons[btnIdx], "setBackgroundColor", Color.parseColor("#333333"))
-                    views.setTextColor(slotButtons[btnIdx], Color.WHITE)
-                }
-            } else {
-                views.setViewVisibility(slotButtons[btnIdx], View.GONE)
+                views.setOnClickPendingIntent(btnId, pi)
             }
-        }
 
-        views.setTextViewText(R.id.btn_toggle_mock, if (isMocking) "⏸" else "▶")
-        val toggleIntent = Intent(context, MockWidgetProvider::class.java).apply {
-            action = "ACTION_TOGGLE_CLICK"
-        }
-        val togglePendingIntent = PendingIntent.getBroadcast(
-            context, 100, toggleIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        views.setOnClickPendingIntent(R.id.btn_toggle_mock, togglePendingIntent)
+            // Play / Pause Button Handling
+            if (hasValidLocation) {
+                views.setBoolean(R.id.btn_toggle_mock, "setEnabled", true)
+                if (effectiveMocking) {
+                    views.setTextViewText(R.id.btn_toggle_mock, "⏸")
+                    views.setInt(R.id.btn_toggle_mock, "setBackgroundColor", Color.parseColor("#C62828")) // Material Red 800
+                } else {
+                    views.setTextViewText(R.id.btn_toggle_mock, "▶")
+                    views.setInt(R.id.btn_toggle_mock, "setBackgroundColor", Color.parseColor("#2E7D32")) // Material Green 800
+                }
 
-        val openAppIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        val openAppPendingIntent = PendingIntent.getActivity(
-            context, 101, openAppIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        views.setOnClickPendingIntent(R.id.btn_find_location, openAppPendingIntent)
+                val toggleIntent = Intent(context, MockWidgetProvider::class.java).apply {
+                    action = "com.example.quickmock.ACTION_TOGGLE_MOCK"
+                }
+                val togglePi = PendingIntent.getBroadcast(
+                    context, 100, toggleIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                views.setOnClickPendingIntent(R.id.btn_toggle_mock, togglePi)
+            } else {
+                // Grey out and disable if no coordinates set for selected slot
+                views.setTextViewText(R.id.btn_toggle_mock, "▶")
+                views.setBoolean(R.id.btn_toggle_mock, "setEnabled", false)
+                views.setInt(R.id.btn_toggle_mock, "setBackgroundColor", Color.parseColor("#616161")) // Material Grey 700 (Disabled)
+                views.setOnClickPendingIntent(R.id.btn_toggle_mock, null)
+            }
 
-        appWidgetManager.updateAppWidget(appWidgetId, views)
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
     }
 }
