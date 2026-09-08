@@ -12,6 +12,7 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -26,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     private var currentLng: Double? = null
     private lateinit var tvCurrentCoords: TextView
 
+    private val slotViews = mutableMapOf<Int, View>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -35,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         val btnLookup = findViewById<Button>(R.id.btn_lookup_address)
         val containerSlots = findViewById<LinearLayout>(R.id.container_slots)
 
-        btnGetCoords.setOnClickListener { fetchCurrentLocation() }
+        btnGetCoords.setOnClickListener { fetchCurrentLocationAndPromptSlot() }
 
         btnLookup.setOnClickListener {
             val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.latlong.net/"))
@@ -47,6 +50,7 @@ class MainActivity : AppCompatActivity() {
 
         for (i in 1..9) {
             val cardView = inflater.inflate(R.layout.item_slot_card, containerSlots, false)
+            slotViews[i] = cardView
 
             val tvHeader = cardView.findViewById<TextView>(R.id.tv_slot_header)
             val etName = cardView.findViewById<EditText>(R.id.et_slot_name)
@@ -117,7 +121,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchCurrentLocation() {
+    private fun fetchCurrentLocationAndPromptSlot() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1001)
             return
@@ -131,8 +135,45 @@ class MainActivity : AppCompatActivity() {
             currentLat = loc.latitude
             currentLng = loc.longitude
             tvCurrentCoords.text = "Current GPS: ${loc.latitude}, ${loc.longitude}"
+
+            promptSlotSelection(loc.latitude.toFloat(), loc.longitude.toFloat())
         } else {
             Toast.makeText(this, "Unable to determine current GPS location", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun promptSlotSelection(lat: Float, lng: Float) {
+        val slotOptions = Array(9) { i -> "Slot ${i + 1}" }
+
+        AlertDialog.Builder(this)
+            .setTitle("Select Target Slot")
+            .setItems(slotOptions) { _, which ->
+                val slot = which + 1
+                saveToSlotWithCheck(slot, lat, lng)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun saveToSlotWithCheck(slot: Int, lat: Float, lng: Float) {
+        val prefs = getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
+        val existingLat = prefs.getFloat("lat_$slot", 0f)
+        val existingLng = prefs.getFloat("lng_$slot", 0f)
+        val existingName = prefs.getString("name_$slot", "Slot $slot") ?: "Slot $slot"
+
+        if (existingLat != 0f || existingLng != 0f) {
+            AlertDialog.Builder(this)
+                .setTitle("Slot $slot Occupied")
+                .setMessage("Slot $slot currently has saved coordinates ('$existingName': $existingLat, $existingLng). Please clear Slot $slot first before overwriting via GPS fetch.")
+                .setPositiveButton("OK", null)
+                .show()
+        } else {
+            val cardView = slotViews[slot]
+            cardView?.findViewById<EditText>(R.id.et_slot_lat)?.setText(lat.toString())
+            cardView?.findViewById<EditText>(R.id.et_slot_lng)?.setText(lng.toString())
+
+            saveSlotData(slot, existingName, lat, lng)
+            Toast.makeText(this, "Saved current GPS to Slot $slot", Toast.LENGTH_SHORT).show()
         }
     }
 
