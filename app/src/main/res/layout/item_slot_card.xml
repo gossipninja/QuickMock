@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="#1F1F1F"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/tv_slot_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Slot 1"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/et_slot_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Location Name"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#888888"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/et_slot_lat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Latitude"
+            android:inputType="numberDecimal|numberSigned"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/et_slot_lng"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Longitude"
+            android:inputType="numberDecimal|numberSigned"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_fill_current_loc"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Use Current Location" />
+
+        <Button
+            android:id="@+id/btn_save_slot"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Save Slot" />
+    </LinearLayout>
+</LinearLayout>

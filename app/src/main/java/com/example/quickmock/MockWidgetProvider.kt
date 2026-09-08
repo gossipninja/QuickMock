@@ -7,7 +7,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.location.LocationManager
 import android.widget.RemoteViews
+import android.widget.Toast
 
 class MockWidgetProvider : AppWidgetProvider() {
 
@@ -26,6 +28,14 @@ class MockWidgetProvider : AppWidgetProvider() {
 
         when (intent.action) {
             "ACTION_SLOT_CLICK" -> {
+                if (!isMockAppSet(context)) {
+                    Toast.makeText(context, "Error: Set QuickMock as Mock Location App in Developer Settings", Toast.LENGTH_LONG).show()
+                    for (id in ids) {
+                        updateWidget(context, appWidgetManager, id, activeSlot = -1, isMocking = false)
+                    }
+                    return
+                }
+
                 val slot = intent.getIntExtra("SLOT", 1)
                 val prefs = context.getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
                 val name = prefs.getString("name_$slot", "Slot $slot") ?: "Slot $slot"
@@ -46,6 +56,14 @@ class MockWidgetProvider : AppWidgetProvider() {
                 }
             }
             "ACTION_TOGGLE_CLICK" -> {
+                if (!isMockAppSet(context)) {
+                    Toast.makeText(context, "Error: Set QuickMock as Mock Location App in Developer Settings", Toast.LENGTH_LONG).show()
+                    for (id in ids) {
+                        updateWidget(context, appWidgetManager, id, activeSlot = -1, isMocking = false)
+                    }
+                    return
+                }
+
                 val serviceIntent = Intent(context, MockLocationService::class.java).apply {
                     action = "STOP_MOCK"
                 }
@@ -62,6 +80,21 @@ class MockWidgetProvider : AppWidgetProvider() {
                     updateWidget(context, appWidgetManager, id, activeSlot, isMocking)
                 }
             }
+        }
+    }
+
+    private fun isMockAppSet(context: Context): Boolean {
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return try {
+            val provider = LocationManager.GPS_PROVIDER
+            @Suppress("DEPRECATION")
+            lm.addTestProvider(provider, false, false, false, false, true, true, true, 1, 1)
+            lm.setTestProviderEnabled(provider, true)
+            true
+        } catch (e: SecurityException) {
+            false
+        } catch (e: Exception) {
+            false
         }
     }
 

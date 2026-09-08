@@ -1,43 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:fillViewport="true">
 
-    <EditText
-        android:id="@+id/et_slot_number"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Slot Number (1-9)"
-        android:inputType="number" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <EditText
-        android:id="@+id/et_location_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Location Name"
-        android:inputType="text" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="QuickMock Settings"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-    <EditText
-        android:id="@+id/et_latitude"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Latitude"
-        android:inputType="numberDecimal|numberSigned" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="12dp"
+            android:text="Ensure QuickMock is selected under Developer Options -> Select mock location app. Save coordinates below to populate your widget slots."
+            android:textColor="#666666"
+            android:textSize="13sp" />
 
-    <EditText
-        android:id="@+id/et_longitude"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Longitude"
-        android:inputType="numberDecimal|numberSigned" />
+        <Button
+            android:id="@+id/btn_get_current_loc_global"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fetch Current GPS Coordinates" />
 
-    <Button
-        android:id="@+id/btn_save_slot"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Save Location to Slot" />
+        <TextView
+            android:id="@+id/tv_current_coords"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="16dp"
+            android:text="Current GPS: Not fetched"
+            android:textColor="#444444"
+            android:textSize="12sp" />
 
-</LinearLayout>
+        <!-- Container for dynamically populated slot cards -->
+        <LinearLayout
+            android:id="@+id/container_slots"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:text="QuickMock • Built for Rapid Location Mocking"
+            android:textColor="#888888"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+</ScrollView>
