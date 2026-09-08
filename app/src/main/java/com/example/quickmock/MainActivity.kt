@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
@@ -29,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private var currentLat: Double? = null
     private var currentLng: Double? = null
     private lateinit var tvCurrentCoords: TextView
+    private lateinit var tvMockStatus: TextView
 
     private val slotViews = mutableMapOf<Int, View>()
 
@@ -37,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         tvCurrentCoords = findViewById(R.id.tv_current_coords)
+        tvMockStatus = findViewById(R.id.tv_mock_status)
         val btnGetCoords = findViewById<Button>(R.id.btn_get_current_loc_global)
         val btnLookup = findViewById<Button>(R.id.btn_lookup_address)
         val containerSlots = findViewById<LinearLayout>(R.id.container_slots)
@@ -109,6 +112,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateMockAppStatusText()
+    }
+
+    private fun updateMockAppStatusText() {
+        if (isMockAppSet()) {
+            tvMockStatus.text = "Mock location app set to: QuickMock"
+            tvMockStatus.setTextColor(Color.parseColor("#4CAF50"))
+        } else {
+            tvMockStatus.text = "Mock location app set to: None / Other\nTo enable, go to Developer Options -> Select mock location app -> QuickMock."
+            tvMockStatus.setTextColor(Color.parseColor("#E53935"))
+        }
+    }
+
+    private fun isMockAppSet(): Boolean {
+        val lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return try {
+            val provider = LocationManager.GPS_PROVIDER
+            @Suppress("DEPRECATION")
+            lm.addTestProvider(provider, false, false, false, false, true, true, true, 1, 1)
+            lm.setTestProviderEnabled(provider, true)
+            lm.removeTestProvider(provider)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     private fun showNativeGeocoderDialog() {
         val input = EditText(this).apply {
             hint = "e.g. 1600 Amphitheatre Pkwy, Mountain View, CA"
@@ -173,7 +205,7 @@ class MainActivity : AppCompatActivity() {
                 .setTitle("Address Found")
                 .setMessage("Address: ${address.getAddressLine(0) ?: query}\n\nLat: $lat\nLng: $lng")
                 .setPositiveButton("Assign to Slot") { _, _ ->
-                    promptSlotSelection(lat, lng)
+                    promptSlotSelection(lat, lng, defaultName = query)
                 }
                 .setNegativeButton("Close", null)
                 .show()
@@ -197,26 +229,26 @@ class MainActivity : AppCompatActivity() {
             currentLng = loc.longitude
             tvCurrentCoords.text = "Current GPS: ${loc.latitude}, ${loc.longitude}"
 
-            promptSlotSelection(loc.latitude.toFloat(), loc.longitude.toFloat())
+            promptSlotSelection(loc.latitude.toFloat(), loc.longitude.toFloat(), defaultName = null)
         } else {
             Toast.makeText(this, "Unable to determine current GPS location", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun promptSlotSelection(lat: Float, lng: Float) {
+    private fun promptSlotSelection(lat: Float, lng: Float, defaultName: String?) {
         val slotOptions = Array(9) { i -> "Slot ${i + 1}" }
 
         AlertDialog.Builder(this)
             .setTitle("Select Target Slot")
             .setItems(slotOptions) { _, which ->
                 val slot = which + 1
-                saveToSlotWithCheck(slot, lat, lng)
+                saveToSlotWithCheck(slot, lat, lng, defaultName)
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun saveToSlotWithCheck(slot: Int, lat: Float, lng: Float) {
+    private fun saveToSlotWithCheck(slot: Int, lat: Float, lng: Float, defaultName: String?) {
         val prefs = getSharedPreferences("quickmock_prefs", Context.MODE_PRIVATE)
         val existingLat = prefs.getFloat("lat_$slot", 0f)
         val existingLng = prefs.getFloat("lng_$slot", 0f)
@@ -229,12 +261,14 @@ class MainActivity : AppCompatActivity() {
                 .setPositiveButton("OK", null)
                 .show()
         } else {
+            val assignedName = if (!defaultName.isNullOrEmpty()) defaultName else existingName
             val cardView = slotViews[slot]
+            cardView?.findViewById<EditText>(R.id.et_slot_name)?.setText(assignedName)
             cardView?.findViewById<EditText>(R.id.et_slot_lat)?.setText(lat.toString())
             cardView?.findViewById<EditText>(R.id.et_slot_lng)?.setText(lng.toString())
 
-            saveSlotData(slot, existingName, lat, lng)
-            Toast.makeText(this, "Saved current GPS to Slot $slot", Toast.LENGTH_SHORT).show()
+            saveSlotData(slot, assignedName, lat, lng)
+            Toast.makeText(this, "Saved coordinates to Slot $slot", Toast.LENGTH_SHORT).show()
         }
     }
 
