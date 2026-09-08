@@ -63,17 +63,23 @@ class MockWidgetProvider : AppWidgetProvider() {
                 R.id.btn_slot_7, R.id.btn_slot_8, R.id.btn_slot_9
             )
 
-            // Material Design 3 Tone colors for selection state
-            val selectedColor = Color.parseColor("#388E3C") // Material Green 700 container tint
-            val defaultColor = Color.parseColor("#424242")  // Material Dark Surface tint
+            // Safe tinting via setInt("setColorFilter") to prevent breaking button text and layout rules
+            val selectedTint = Color.parseColor("#388E3C") // Material Green
+            val defaultTint = Color.TRANSPARENT            // Default button background
 
             for (i in slotButtons.indices) {
                 val slotNum = i + 1
                 val btnId = slotButtons[i]
+
+                // Ensure labels stay visible
+                views.setTextViewText(btnId, slotNum.toString())
+
                 if (slotNum == activeSlot) {
-                    views.setInt(btnId, "setBackgroundColor", selectedColor)
+                    views.setInt(btnId, "setBackgroundColor", selectedTint)
+                    views.setTextColor(btnId, Color.WHITE)
                 } else {
-                    views.setInt(btnId, "setBackgroundColor", defaultColor)
+                    views.setInt(btnId, "setBackgroundColor", Color.parseColor("#424242"))
+                    views.setTextColor(btnId, Color.WHITE)
                 }
 
                 val slotIntent = Intent(context, MockWidgetProvider::class.java).apply {
@@ -90,12 +96,13 @@ class MockWidgetProvider : AppWidgetProvider() {
             // Play / Pause Button Handling
             if (hasValidLocation) {
                 views.setBoolean(R.id.btn_toggle_mock, "setEnabled", true)
+                views.setTextColor(R.id.btn_toggle_mock, Color.WHITE)
                 if (effectiveMocking) {
                     views.setTextViewText(R.id.btn_toggle_mock, "⏸")
-                    views.setInt(R.id.btn_toggle_mock, "setBackgroundColor", Color.parseColor("#C62828")) // Material Red 800
+                    views.setInt(R.id.btn_toggle_mock, "setBackgroundColor", Color.parseColor("#C62828"))
                 } else {
                     views.setTextViewText(R.id.btn_toggle_mock, "▶")
-                    views.setInt(R.id.btn_toggle_mock, "setBackgroundColor", Color.parseColor("#2E7D32")) // Material Green 800
+                    views.setInt(R.id.btn_toggle_mock, "setBackgroundColor", Color.parseColor("#2E7D32"))
                 }
 
                 val toggleIntent = Intent(context, MockWidgetProvider::class.java).apply {
@@ -107,10 +114,10 @@ class MockWidgetProvider : AppWidgetProvider() {
                 )
                 views.setOnClickPendingIntent(R.id.btn_toggle_mock, togglePi)
             } else {
-                // Grey out and disable if no coordinates set for selected slot
                 views.setTextViewText(R.id.btn_toggle_mock, "▶")
                 views.setBoolean(R.id.btn_toggle_mock, "setEnabled", false)
-                views.setInt(R.id.btn_toggle_mock, "setBackgroundColor", Color.parseColor("#616161")) // Material Grey 700 (Disabled)
+                views.setTextColor(R.id.btn_toggle_mock, Color.parseColor("#9E9E9E"))
+                views.setInt(R.id.btn_toggle_mock, "setBackgroundColor", Color.parseColor("#616161"))
                 views.setOnClickPendingIntent(R.id.btn_toggle_mock, null)
             }
 
